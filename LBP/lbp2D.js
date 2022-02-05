@@ -23,4 +23,7 @@ function decreaseLbpIntroOpacity2(loop) {
 
     if (loop != 50)
         decreaseLbpIntroOpacity()
+
+    if (loop >= 50)
+        document.querySelector('#divLbpIntro').style.visibility = 'hidden'
 }
