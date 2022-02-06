@@ -17,6 +17,21 @@
 
             visibility: hidden;
         }
+
+        #btnAdminDeactivated, #btnAdminActivated {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+        }
+
+        #btnAdminDeactivated {
+            opacity: 80%;
+        }
+
+        #btnAdminActivated {
+            visibility: hidden;
+        }
+
     </style>
 
     <!-- Bootstrap -->
@@ -29,6 +44,11 @@
     </head>
 
     <body>
+        <div id="buttonsAdmin">
+            <button class="btn btn-outline-light" id="btnAdminDeactivated"><i>Dev tools</i></button>
+            <button class="btn btn-success" id="btnAdminActivated"><i>Dev tools</i></button>
+        </div>
+
         <div id="divLbpIntro">
             <img src="./files/gifs/lbpLoading.gif" width="100%">
         </div>

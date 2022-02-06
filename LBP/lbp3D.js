@@ -3,7 +3,9 @@ import * as THREE from './libs/three.module.js'
 let camera, scene, renderer
 let cameraX = 0, cameraY = 1.73, cameraZ = 10
 let moveFoward = false, moveBackwards = false, moveLeft = false, moveRight = false
-let mousePos = { x: 0, y: 0 }
+let mousePos = { x: 0, y: 0, game: { x: 0, y: 0 } }
+
+let admin = { activated: false, clicking: false, event: ''}
 
 // once everything is loaded, we run our Three.js stuff
 window.onload = function init() {
@@ -188,10 +190,10 @@ function sackboy() {
 
     /* CLOTHING */
     /** SHOES */
-    let shoeR = new THREE.Mesh(geoShoe, shoes)
-    shoeR.position.y = -legSize.z/2
-    let shoeL = new THREE.Mesh(geoShoe, shoes)
-    shoeL.position.y = -legSize.z/2
+    // let shoeR = new THREE.Mesh(geoShoe, shoes)
+    // shoeR.position.y = -legSize.z/2
+    // let shoeL = new THREE.Mesh(geoShoe, shoes)
+    // shoeL.position.y = -legSize.z/2
 
     /** RIBBON */
     // let ribbon = new THREE.Mesh(geoRibbon, dress);
@@ -227,23 +229,14 @@ function sackboy() {
     body.add(legL);
 
     /** ADDING CLOTHING TO SCENES */
-    legR.add(shoeR);
-    legL.add(shoeL);
+    // legR.add(shoeR);
+    // legL.add(shoeL);
     // head.add(ribbon);
     // head.add(ribbonLateralRight);
     // head.add(ribbonLateralLeft);
 
-    /* POSIÇÃO NO CÍRCULO */
-    // body.rotation.x = Math.PI/2
-    // body.rotation.y = Math.PI
-    body.position.y = bodySize.y + legSize.z + shoesSize.z
-    // body.position.y = -(-circleSize.r + circleSize.r/10)
-
-    // head.scale.x = 0.2, head.scale.y = 0.2, head.scale.z = 0.2
-    // eyeR.scale.x = 0.2, eyeR.scale.y = 0.2, eyeR.scale.z = 0.2
-    // eyeL.scale.x = 0.2, eyeL.scale.y = 0.2, eyeL.scale.z = 0.2
-    // body.scale.x = 0.2, body.scale.y = 0.2, body.scale.z = 0.2
-    // legR.scale.x = 0.2, legR.scale.y = 0.2, legR.scale.z = 0.2
+    /* POSITION IN "sackPos" */
+    body.position.y = bodySize.y + legSize.z // + shoesSize.z
 
 }
 
@@ -265,26 +258,39 @@ function render() {
 
     if (moveRight)
         camera.position.x += 0.01
-    
-    
-    // let targetY = mousePos.y * 100;
-    // if (targetY >  -23) {
-    //     leftEye.position.z = (targetY - leftEye.position.y + 100) * 0.013;
-    //     rightEye.position.z = (targetY - rightEye.position.y + 100) * 0.013;
-    //     mouth.position.z = (targetY - mouth.position.y + 100) * 0.013;
-    // }
+
+    if (admin.activated && admin.clicking) {
+        /** X */
+        if (mousePos.x < -0.15 && mousePos.x >= -0.5)
+            camera.position.x += 0.005
+        if (mousePos.x < -0.5 && mousePos.x >= -0.9)
+            camera.position.x += 0.01
+        if (mousePos.x < -0.9)
+            camera.position.x += 0.03
+        
+
+        if (mousePos.x > 0.15 && mousePos.x <= 0.5)
+            camera.position.x -= 0.005
+        if (mousePos.x > 0.5 && mousePos.x <= 0.9)
+            camera.position.x -= 0.01
+        if (mousePos.x > 0.9)
+            camera.position.x -= 0.03
+
+        /** Y */
+        if (mousePos.y < -0.15)
+            camera.position.y -= 0.005
+
+        if (mousePos.y > 0.15)
+            camera.position.y += 0.005    
+
+        console.log(mousePos.x);
+    }
 
 
     // render the scene into viewport using the camera
     renderer.render(scene, camera);
 }
 
-function handleMouseMove(event) {
-    // convert mouse window coordinates into normalized coordinates: [-1, 1]
-    let x = -1 + (event.clientX / window.innerWidth) * 2
-    let y = 1 - (event.clientY / window.innerHeight) * 2
-    mousePos = { x: x, y: y }
-}
 
 /*****************************
 * KEYBOARD EVENTS 
@@ -328,4 +334,45 @@ document.addEventListener("keyup", event => {
     }
 })
 
-document.addEventListener('mousemove', handleMouseMove, false)
+/*****************************
+* MOUSE EVENTS 
+* ***************************/
+document.addEventListener("mousedown", event => {
+
+    admin.clicking = true
+
+    // convert mouse window coordinates into normalized coordinates: [-1, 1]
+    let x = -1 + (event.clientX / window.innerWidth) * 2
+    let y = 1 - (event.clientY / window.innerHeight) * 2
+
+    mousePos.x = x
+    mousePos.y = y
+
+})
+
+document.addEventListener("mousemove", event => {
+    // convert mouse window coordinates into normalized coordinates: [-1, 1]
+    let x = -1 + (event.clientX / window.innerWidth) * 2
+    let y = 1 - (event.clientY / window.innerHeight) * 2
+
+    mousePos.x = x
+    mousePos.y = y
+
+})
+
+document.addEventListener("mouseup", event => { admin.clicking = false })
+
+document.querySelector('#btnAdminDeactivated').addEventListener('click', event => {
+    admin.activated = true
+    
+    mousePos.game.x = camera.position.x
+    mousePos.game.y = camera.position.y
+})
+
+document.querySelector('#btnAdminActivated').addEventListener('click', event => {
+    admin.activated = false
+
+    camera.position.x = mousePos.game.x
+    camera.position.y = mousePos.game.y
+})
+
