@@ -1,7 +1,7 @@
 import * as THREE from './libs/three.module.js'
 
 let camera, scene, renderer
-let cameraX = 0, cameraY = 2, cameraZ = 10
+let cameraX = 0, cameraY = 1.73, cameraZ = 10
 let moveFoward = false, moveBackwards = false, moveLeft = false, moveRight = false
 let mousePos = { x: 0, y: 0 }
 
@@ -28,11 +28,9 @@ window.onload = function init() {
 
     // add the output of the renderer to an HTML element (this case, the body)
     document.body.appendChild(renderer.domElement)
-
-    document.addEventListener('mousemove', handleMouseMove, false)
     
     /** house */
-    // sackboy()
+    sackboy()
 
     /** ground */
     groundFunction()
@@ -49,11 +47,11 @@ window.onload = function init() {
 
 function groundFunction() {
     /** GROUND */
-    let groundColor = new THREE.MeshBasicMaterial({ color: '#9b7f47' })
-    let groundSize = { x:5, y:0, z:1.5 }
+    let groundColor = new THREE.MeshLambertMaterial({ color: '#9b7f47' })
+    let groundSize = { x:5, y:5, z:1 }
     let geoGround = new THREE.BoxGeometry(groundSize.x,groundSize.y,groundSize.z)
     let ground = new THREE.Mesh(geoGround, groundColor)
-    ground.position.y = -groundSize.y/2
+    ground.position.y = -groundSize.y/2 + 1.25
     ground.position.x = 0
     ground.position.z = -4 + groundSize.z
     scene.add(ground)
@@ -73,40 +71,53 @@ function lights() {
 
 function sackboy() {
 
-    let skinColor = new THREE.TextureLoader().load('images/sackboy/skin.png')
+    let layer = {
+                    one: { x: 0, y: 1.25, z: -3 },
+                    two: { x: 0, y: 1.25, z: -3 },
+                    three: { x: 0, y: 1.25, z: -3 }
+                }
+
+    let sackPos = new THREE.Object3D()
+    sackPos.position.set(layer.two.x , layer.two.y , layer.two.z)
+    sackPos.rotation.y = -Math.PI
+
+    let axes = new THREE.AxesHelper(4)
+    sackPos.add(axes)
+
+    scene.add(sackPos)
+
+
+    let skinColor = new THREE.TextureLoader().load('files/textures/skin.jpg')
     let eyesColor = new THREE.TextureLoader().load('images/sackboy/eyes.png')
     let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
-    let tieColor = new THREE.TextureLoader().load('images/sackboy/circle.png')
     let dressColor = new THREE.TextureLoader().load('images/sackboy/dress.png')
-    // texture.wrapS = THREE.RepeatWrapping;
-    // texture.wrapT = THREE.RepeatWrapping;
-    // texture.repeat.set( 3, 3 );
+    skinColor.wrapS = THREE.RepeatWrapping;
+    skinColor.wrapT = THREE.RepeatWrapping;
+    skinColor.repeat.set(3,1)
 
     // flatShading: true, 
     let skin = new THREE.MeshPhongMaterial({ map: skinColor });
     let eyes = new THREE.MeshPhongMaterial({ map: eyesColor });
     let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
-    let tie = new THREE.MeshPhongMaterial({ map: tieColor });
     let dress = new THREE.MeshPhongMaterial({ map: dressColor });
 
     // let materialSkin = new THREE.MeshBasicMaterial({ color: 0xa88e64 });
     
 
     /** OBJ. SIZES */
-    let headSize = { r:1.2 }
-    let bodySize = { x:0.7 , y:1 , z:2 }
-    let legSize = { x:0.3, y:0.35 , z:1.5 }
-    let eyeSize = { r:0.21 }
-    let armSize = { x:0.2 , y:0.3 , z:0.8 }
+    let headSize = { r:1.2*0.05 }
+    let bodySize = { x:0.7*0.05 , y:1*0.05 , z:2*0.05 }
+    let legSize = { x:0.3*0.05, y:0.35*0.05 , z:1.5*0.05 } // let legSize = { x:0.75, y:0.625 , z:0.325 }
+    let eyeSize = { r:0.21*0.05 }
+    let armSize = { x:0.2*0.05 , y:0.3*0.05 , z:0.8*0.05 }
     let forearmSize = { x:armSize.y , y:armSize.x , z:armSize.z }
 
-    let handSize = { r:0.2 }
+    let handSize = { r:0.2*0.05 }
 
     /** OBJ. CLOTHING SIZES */
-    let shoesSize = { x:legSize.x+0.15, y:legSize.y+0.2 , z:0.4 }
-    let tieMiddleSize = { r:0.12 }
-    let ribbonSize = { r:0.15 }
-    let ribbonLateralsSize = { r:0.24 }
+    let shoesSize = { x:(legSize.x+0.15)*0.05 , y:(legSize.y+0.2)*0.05 , z:0.4*0.05 }
+    // let ribbonSize = { r:0.15 }
+    // let ribbonLateralsSize = { r:0.24 }
 
     /** GEOMETRY */
     let geoHead = new THREE.SphereGeometry(headSize.r);
@@ -119,9 +130,8 @@ function sackboy() {
     let geoHand = new THREE.SphereGeometry(handSize.r);
     /** GEOMETRY CLOTHING */
     let geoShoe = new THREE.CylinderGeometry(shoesSize.x, shoesSize.y, shoesSize.z);
-    let geoMiddleTie = new THREE.SphereGeometry(tieMiddleSize.r);
-    let geoRibbon = new THREE.SphereGeometry(ribbonSize.r);
-    let geoRibbonLaterals = new THREE.SphereGeometry(ribbonLateralsSize.r);
+    // let geoRibbon = new THREE.SphereGeometry(ribbonSize.r);
+    // let geoRibbonLaterals = new THREE.SphereGeometry(ribbonLateralsSize.r);
     /** HEAD */
     let head = new THREE.Mesh(geoHead, skin);
     head.position.set(0 , bodySize.z/2+headSize.r , 0)
@@ -183,39 +193,23 @@ function sackboy() {
     let shoeL = new THREE.Mesh(geoShoe, shoes)
     shoeL.position.y = -legSize.z/2
 
-    /** TIE */
-    let tieLength = new THREE.Mesh(geoMiddleTie, tie);
-    tieLength.position.x = bodySize.x/2 - tieMiddleSize.r - 0.2
-    tieLength.position.y = bodySize.y/2 + tieMiddleSize.r + 0.11
-    tieLength.position.z = bodySize.y/2 + tieMiddleSize.r + 0.2
-
-    let tieLength2 = new THREE.Mesh(geoMiddleTie, tie);
-    tieLength2.position.x = bodySize.x/2 - tieMiddleSize.r - 0.2
-    tieLength2.position.y = bodySize.y/2 + tieMiddleSize.r - 0.30
-    tieLength2.position.z = bodySize.y/2 + tieMiddleSize.r + 0.2
-
-    let tieLength3 = new THREE.Mesh(geoMiddleTie, tie);
-    tieLength3.position.x = bodySize.x/2 - tieMiddleSize.r - 0.2
-    tieLength3.position.y = bodySize.y/2 + tieMiddleSize.r - 0.68
-    tieLength3.position.z = bodySize.y/2 + tieMiddleSize.r + 0.2
-
     /** RIBBON */
-    let ribbon = new THREE.Mesh(geoRibbon, dress);
-    ribbon.position.y = headSize.r - headSize.r/4
-    ribbon.position.z = headSize.r - headSize.r/4.5
+    // let ribbon = new THREE.Mesh(geoRibbon, dress);
+    // ribbon.position.y = headSize.r - headSize.r/4
+    // ribbon.position.z = headSize.r - headSize.r/4.5
     
-    let ribbonLateralRight = new THREE.Mesh(geoRibbonLaterals, dress);
-    ribbonLateralRight.position.y = headSize.r - headSize.r/4
-    ribbonLateralRight.position.z = headSize.r - headSize.r/4.5
-    ribbonLateralRight.position.x = ribbonLateralsSize.r
+    // let ribbonLateralRight = new THREE.Mesh(geoRibbonLaterals, dress);
+    // ribbonLateralRight.position.y = headSize.r - headSize.r/4
+    // ribbonLateralRight.position.z = headSize.r - headSize.r/4.5
+    // ribbonLateralRight.position.x = ribbonLateralsSize.r
 
-    let ribbonLateralLeft = new THREE.Mesh(geoRibbonLaterals, dress);
-    ribbonLateralLeft.position.y = headSize.r - headSize.r/4
-    ribbonLateralLeft.position.z = headSize.r - headSize.r/4.5
-    ribbonLateralLeft.position.x = -ribbonLateralsSize.r
+    // let ribbonLateralLeft = new THREE.Mesh(geoRibbonLaterals, dress);
+    // ribbonLateralLeft.position.y = headSize.r - headSize.r/4
+    // ribbonLateralLeft.position.z = headSize.r - headSize.r/4.5
+    // ribbonLateralLeft.position.x = -ribbonLateralsSize.r
 
     /** ADDING TO SCENES */
-    scene.add(body);
+    sackPos.add(body);
     body.add(head);
     head.add(eyeR);
     head.add(eyeL);
@@ -235,18 +229,21 @@ function sackboy() {
     /** ADDING CLOTHING TO SCENES */
     legR.add(shoeR);
     legL.add(shoeL);
-    body.add(tieLength);
-    body.add(tieLength2);
-    body.add(tieLength3);
-    head.add(ribbon);
-    head.add(ribbonLateralRight);
-    head.add(ribbonLateralLeft);
+    // head.add(ribbon);
+    // head.add(ribbonLateralRight);
+    // head.add(ribbonLateralLeft);
 
     /* POSIÇÃO NO CÍRCULO */
     // body.rotation.x = Math.PI/2
     // body.rotation.y = Math.PI
-    // body.position.z = bodySize.y + legSize.z + shoesSize.z
+    body.position.y = bodySize.y + legSize.z + shoesSize.z
     // body.position.y = -(-circleSize.r + circleSize.r/10)
+
+    // head.scale.x = 0.2, head.scale.y = 0.2, head.scale.z = 0.2
+    // eyeR.scale.x = 0.2, eyeR.scale.y = 0.2, eyeR.scale.z = 0.2
+    // eyeL.scale.x = 0.2, eyeL.scale.y = 0.2, eyeL.scale.z = 0.2
+    // body.scale.x = 0.2, body.scale.y = 0.2, body.scale.z = 0.2
+    // legR.scale.x = 0.2, legR.scale.y = 0.2, legR.scale.z = 0.2
 
 }
 
@@ -330,3 +327,5 @@ document.addEventListener("keyup", event => {
         moveRight = false
     }
 })
+
+document.addEventListener('mousemove', handleMouseMove, false)
