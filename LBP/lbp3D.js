@@ -1,6 +1,13 @@
 import * as THREE from './libs/three.module.js'
 
+/* Variables related to dev tools */
 let camera, scene, renderer
+let angle = 0
+let mousePos = { x: 0, y: 0, game: { x: 0, y: 0, z: -4 } }
+let admin = { activated: false, clicking: false, event: ''}
+
+/* Variables related to the sackboy/game interactions */
+let sackPos
 let moveFoward = false, moveBackwards = false, moveLeft = false, moveRight = false
 let jump = {
                 up: false,
@@ -9,37 +16,29 @@ let jump = {
                 intensity: 0,
                 max: 0
             }
-let mousePos = { x: 0, y: 0, game: { x: 0, y: 0, z: -4 } }
-let sackPos
 let layer = {
                 one: { x: 0, y: 1.25, z: -2.7 },
                 two: { x: 0, y: 1.25, z: -3 },
                 three: { x: 0, y: 1.25, z: -3.3 }
             }
 
-let angle = 0
 
-let admin = { activated: false, clicking: false, event: ''}
 
-// once everything is loaded, we run our Three.js stuff
 window.onload = function init() {
 
-    // create an empty scene, that will hold all our elements such as objects, cameras and lights
     scene = new THREE.Scene()
 
-    // create a camera, which defines where we're looking at
     const aspect = window.innerWidth / window.innerHeight
     camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 100)
     camera.position.x = 0
     camera.position.y = 1.73
     camera.position.z = -4
-    camera.lookAt(scene.position); //point the camera to the center of the scene
+    camera.lookAt(scene.position)
 
 
     // create a render and set the size
     renderer = new THREE.WebGLRenderer({ antialias: false }) // aliasing (jagged edges when rendering)
     renderer.setSize(window.innerWidth, window.innerHeight)
-    // configure renderer clear color
     renderer.setClearColor("#72bde0")
 
     // add the output of the renderer to an HTML element (this case, the body)
@@ -87,27 +86,29 @@ function lights() {
 
 function sackboy() {
 
+    /* pivot where sackboy's object is added to */
     sackPos = new THREE.Object3D()
     sackPos.position.set(layer.two.x , layer.two.y , layer.two.z)
     sackPos.rotation.y = -Math.PI
+    scene.add(sackPos)
 
     let axes = new THREE.AxesHelper(4)
     sackPos.add(axes)
 
-    scene.add(sackPos)
 
+    /** MATERIALS */
+    let skinM = new THREE.TextureLoader().load('files/textures/skin.jpg')
+    skinM.wrapS = THREE.RepeatWrapping;
+    skinM.wrapT = THREE.RepeatWrapping;
+    skinM.repeat.set(3,1)
 
-    let skinColor = new THREE.TextureLoader().load('files/textures/skin.jpg')
-    let eyesColor = new THREE.TextureLoader().load('images/sackboy/eyes.png')
+    let eyesM = new THREE.TextureLoader().load('images/sackboy/eyes.png')
     // let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
     let dressColor = new THREE.TextureLoader().load('images/sackboy/dress.png')
-    skinColor.wrapS = THREE.RepeatWrapping;
-    skinColor.wrapT = THREE.RepeatWrapping;
-    skinColor.repeat.set(3,1)
 
     // flatShading: true, 
-    let skin = new THREE.MeshPhongMaterial({ map: skinColor });
-    let eyes = new THREE.MeshPhongMaterial({ map: eyesColor });
+    let skin = new THREE.MeshPhongMaterial({ map: skinM });
+    let eyes = new THREE.MeshPhongMaterial({ map: eyesM });
     // let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
     let dress = new THREE.MeshPhongMaterial({ map: dressColor });
 
@@ -125,7 +126,7 @@ function sackboy() {
     let handSize = { r:0.2*0.05 }
 
     /** OBJ. CLOTHING SIZES */
-    let shoesSize = { x:(legSize.x+0.15)*0.05 , y:(legSize.y+0.2)*0.05 , z:0.4*0.05 }
+    // let shoesSize = { x:(legSize.x+0.15)*0.05 , y:(legSize.y+0.2)*0.05 , z:0.4*0.05 }
     // let ribbonSize = { r:0.15 }
     // let ribbonLateralsSize = { r:0.24 }
 
@@ -139,7 +140,7 @@ function sackboy() {
 
     let geoHand = new THREE.SphereGeometry(handSize.r);
     /** GEOMETRY CLOTHING */
-    let geoShoe = new THREE.CylinderGeometry(shoesSize.x, shoesSize.y, shoesSize.z);
+    // let geoShoe = new THREE.CylinderGeometry(shoesSize.x, shoesSize.y, shoesSize.z);
     // let geoRibbon = new THREE.SphereGeometry(ribbonSize.r);
     // let geoRibbonLaterals = new THREE.SphereGeometry(ribbonLateralsSize.r);
     /** HEAD */
@@ -341,8 +342,6 @@ function render() {
         jump.down = false
     }
 
-
-    // render the scene into viewport using the camera
     renderer.render(scene, camera);
 }
 
@@ -436,11 +435,26 @@ document.addEventListener("keyup", event => {
 * ***************************/
 document.addEventListener("mousedown", event => {
 
-    admin.clicking = true
-
     // convert mouse window coordinates into normalized coordinates: [-1, 1]
     let x = -1 + (event.clientX / window.innerWidth) * 2
     let y = 1 - (event.clientY / window.innerHeight) * 2
+
+    console.log(x, y, window.innerWidth);
+
+    if ( (y >= -0.1 && y <= 0.35) && (x >= -0.045 && x <= 0.045) ) {
+        /** COORDINATES TO OPEN "POP-IT" */
+        if (document.querySelector('#divPopIt').parentNode.style.visibility == 'hidden') {
+            document.querySelector('#divPopIt').style.left = (window.innerWidth/2 + (window.innerWidth/2) *0.05)+'px'
+            document.querySelector('#divPopIt').style.bottom = window.innerHeight/2+10+'px'
+            document.querySelector('#divPopIt').parentNode.style.visibility = 'visible' 
+        } else {
+            document.querySelector('#divPopIt').parentNode.style.visibility = 'hidden'
+        }
+
+        
+    } else {
+        admin.clicking = true
+    }
 
     mousePos.x = x
     mousePos.y = y
