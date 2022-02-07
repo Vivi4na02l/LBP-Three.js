@@ -1,18 +1,22 @@
-let delayIntro = 3000, loop = 0, opacity = 1
+let delayThreeSeconds = 3000
+
+
+/*****************************
+* LBP INTRO FADE OUT "ANIMATION"
+* ***************************/
+let loop = 0, opacity = 1
 
 setTimeout(function() {
     decreaseLbpIntroOpacity()
-}, delayIntro)
+}, delayThreeSeconds)
 
 function decreaseLbpIntroOpacity() {
     
     loop += 1
-
-    let delayLbpIntro = 30; // 3 seconds
  
     setTimeout(function() {
         decreaseLbpIntroOpacity2(loop)
-    }, delayLbpIntro)
+    }, 30)
 }
 
 function decreaseLbpIntroOpacity2(loop) {
@@ -29,7 +33,9 @@ function decreaseLbpIntroOpacity2(loop) {
 }
 
 
-
+/*****************************
+* BUTTONS "DEV TOOLS"
+* ***************************/
 document.querySelector('#btnAdminDeactivated').addEventListener('click', event => {
     document.querySelector('#btnAdminDeactivated').style.visibility = 'hidden'
     document.querySelector('#btnAdminActivated').style.visibility = 'visible'
@@ -38,4 +44,51 @@ document.querySelector('#btnAdminDeactivated').addEventListener('click', event =
 document.querySelector('#btnAdminActivated').addEventListener('click', event => {
     document.querySelector('#btnAdminActivated').style.visibility = 'hidden'
     document.querySelector('#btnAdminDeactivated').style.visibility = 'visible'
+})
+
+
+
+/*****************************
+* DIV INFO "ANIMATION"
+* ***************************/
+document.querySelector('#btnInfo').addEventListener('click', event => {
+    if (document.querySelector('#divInfo').parentNode.style.visibility == 'hidden' || document.querySelector('#divInfo').style.bottom >= window.innerHeight-10+'px') {
+        divInfoAnimation(window.innerHeight, true)
+
+        document.querySelector('#divInfo').parentNode.style.visibility = 'visible'
+    } else {
+        divInfoAnimation(window.innerHeight/2, false)
+    }
+    
+    function divInfoAnimation(pos, appearing) {
+        if (appearing) {
+            pos -= 10   
+        } else {
+            pos += 10
+        }
+     
+        setTimeout(function() {
+            divInfoAnimation2(pos, appearing)
+        }, 30)
+    }
+    
+    function divInfoAnimation2(pos, appearing) {
+        if (appearing) {
+            if (pos >= window.innerHeight/2+5) {
+                document.querySelector('#btnInfo').disabled = true
+                document.querySelector('#divInfo').style.bottom = pos +'px'
+                divInfoAnimation(pos, appearing)
+            } else {
+                document.querySelector('#btnInfo').disabled = false
+            }
+        } else {
+            if (pos <= window.innerHeight) {
+                document.querySelector('#btnInfo').disabled = true
+                document.querySelector('#divInfo').style.bottom = pos +'px'
+                divInfoAnimation(pos, appearing)
+            } else {
+                document.querySelector('#btnInfo').disabled = false
+            }
+        }
+    }
 })

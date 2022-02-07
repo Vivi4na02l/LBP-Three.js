@@ -32,6 +32,43 @@
             visibility: hidden;
         }
 
+        #btnInfo {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+
+            border-width: 2px;
+        }
+        /* #btnInfo:hover i {
+            color: white;
+        } */
+
+        #divInfo {
+            position: absolute;
+            
+            display: inline;
+
+            background-color: #47a3c7;
+            border-width: 5px;
+            border-color: #329fca;
+            border-radius: 15px;
+            opacity: 80%;
+        } #divInfo div {
+            display: flex;
+            flex-direction: column;
+        } #divInfo div button {
+            /* width: 100%; */
+
+            outline: none;
+            border: none;
+            background-color: transparent;
+            color: #d6d6d6;
+            font-weight: 400;
+        } #divInfo div button:hover p{
+            color: #FFFFFF;
+            font-weight: 600;
+        }
+
     </style>
 
     <!-- Bootstrap -->
@@ -49,8 +86,19 @@
             <button class="btn btn-success" id="btnAdminActivated"><i>Dev tools</i></button>
         </div>
 
+        <button class="btn btn-outline-light" id="btnInfo"><i><b>i</b></i></button>
+
         <div id="divLbpIntro">
             <img src="./files/gifs/lbpLoading.gif" width="100%">
+        </div>
+
+        <div class="d-flex justify-content-center" style="visibility: hidden;">
+            <div id="divInfo">
+                <div class="m-5">
+                    <button> <p>CONTROLS</p> </button>
+                    <button> <p>ABOUT US</p> </butt>
+                </div>
+            </div>
         </div>
     </body>
 </html>
