@@ -1,9 +1,23 @@
 import * as THREE from './libs/three.module.js'
 
 let camera, scene, renderer
-let cameraX = 0, cameraY = 1.73, cameraZ = 10
 let moveFoward = false, moveBackwards = false, moveLeft = false, moveRight = false
-let mousePos = { x: 0, y: 0, game: { x: 0, y: 0 } }
+let jump = {
+                up: false,
+                down: false,
+                intensityToggle: false,
+                intensity: 0,
+                max: 0
+            }
+let mousePos = { x: 0, y: 0, game: { x: 0, y: 0, z: -4 } }
+let sackPos
+let layer = {
+                one: { x: 0, y: 1.25, z: -2.7 },
+                two: { x: 0, y: 1.25, z: -3 },
+                three: { x: 0, y: 1.25, z: -3.3 }
+            }
+
+let angle = 0
 
 let admin = { activated: false, clicking: false, event: ''}
 
@@ -17,7 +31,7 @@ window.onload = function init() {
     const aspect = window.innerWidth / window.innerHeight
     camera = new THREE.PerspectiveCamera(75, aspect, 0.1, 100)
     camera.position.x = 0
-    camera.position.y = cameraY
+    camera.position.y = 1.73
     camera.position.z = -4
     camera.lookAt(scene.position); //point the camera to the center of the scene
 
@@ -73,13 +87,7 @@ function lights() {
 
 function sackboy() {
 
-    let layer = {
-                    one: { x: 0, y: 1.25, z: -3 },
-                    two: { x: 0, y: 1.25, z: -3 },
-                    three: { x: 0, y: 1.25, z: -3 }
-                }
-
-    let sackPos = new THREE.Object3D()
+    sackPos = new THREE.Object3D()
     sackPos.position.set(layer.two.x , layer.two.y , layer.two.z)
     sackPos.rotation.y = -Math.PI
 
@@ -91,7 +99,7 @@ function sackboy() {
 
     let skinColor = new THREE.TextureLoader().load('files/textures/skin.jpg')
     let eyesColor = new THREE.TextureLoader().load('images/sackboy/eyes.png')
-    let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
+    // let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
     let dressColor = new THREE.TextureLoader().load('images/sackboy/dress.png')
     skinColor.wrapS = THREE.RepeatWrapping;
     skinColor.wrapT = THREE.RepeatWrapping;
@@ -100,7 +108,7 @@ function sackboy() {
     // flatShading: true, 
     let skin = new THREE.MeshPhongMaterial({ map: skinColor });
     let eyes = new THREE.MeshPhongMaterial({ map: eyesColor });
-    let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
+    // let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
     let dress = new THREE.MeshPhongMaterial({ map: dressColor });
 
     // let materialSkin = new THREE.MeshBasicMaterial({ color: 0xa88e64 });
@@ -244,20 +252,40 @@ function sackboy() {
 * ANIMATION FUNCTION 
 * ***************************/
 function render() {
-    
-    if (moveFoward) {
-        camera.position.z += 0.01
-        console.log(camera.position.z);
+    if (admin.activated) {
+        if (moveFoward) {
+            camera.position.z += 0.01
+            console.log(camera.position.z);
+        }
+
+        if (moveBackwards) {
+            camera.position.z -= 0.01
+        }
+
+        // if (moveLeft) {
+        //     angle -= 0.1
+        //     camera.lookAt(new THREE.Vector3(angle,0,0));
+        // }
+
+        // if (moveRight) {
+        //     angle += 0.1
+        //     camera.lookAt(new THREE.Vector3(angle,0,0));
+        // }
     }
 
-    if (moveBackwards)
-        camera.position.z -= 0.01
-    
-    if (moveLeft)
-        camera.position.x -= 0.01
+    else {
+        if (moveRight) {
+            camera.position.x -= 0.01
+            sackPos.position.x -= 0.01
+            sackPos.rotation.y = -Math.PI/2
+        }
 
-    if (moveRight)
-        camera.position.x += 0.01
+        if (moveLeft) {
+            camera.position.x += 0.01
+            sackPos.position.x += 0.01
+            sackPos.rotation.y = Math.PI/2
+        }
+    }
 
     if (admin.activated && admin.clicking) {
         /** X */
@@ -286,6 +314,33 @@ function render() {
         console.log(mousePos.x);
     }
 
+    /* JUMPING ANIMATION */
+    /** depending on the timer that the key 'space' is pressed, a respective number will be saved on the variable 'jump.intensity' */
+    if (jump.intensityToggle) {
+        if (jump.intensity < 0.35) {                                // doesn't allow the jump to be higher than +0.35
+            jump.intensity += 0.025
+            jump.max = sackPos.position.y + jump.intensity          // depending on the value on 'jump.intensity' and the currently sack position, it calculates the max value allowed for the jump
+        } else {
+            jump.intensityToggle = false
+        }
+    } else if (!jump.intensityToggle && jump.intensity != 0) {
+        jump.up = true
+    }
+
+    /** the value saved in 'jump.max' is now used here in defining where the "jumping up" starts and ends */
+    if ( jump.up && !jump.down && sackPos.position.y != jump.max ) {
+        sackPos.position.y += 0.01
+        if (sackPos.position.y >= jump.max) {
+            jump.down = true
+        }
+    } else if (jump.up && jump.down && sackPos.position.y > 1.25) {
+        sackPos.position.y -= 0.01
+        jump.intensity = 0
+    } else {
+        jump.up = false
+        jump.down = false
+    }
+
 
     // render the scene into viewport using the camera
     renderer.render(scene, camera);
@@ -297,41 +352,83 @@ function render() {
 * ***************************/
 document.addEventListener("keydown", event => {
 
-    if (event.key == 'w' || event.key == 'ArrowUp') {
+    /* actions that occurs when a key is pressed and the 'Dev tools' button is activated */
+    if (event.key == 'ArrowUp' && admin.activated) {
         moveFoward = true
     }
     
-    if (event.key == 'S' || event.key == 'ArrowDown') {
+    if (event.key == 'ArrowDown' && admin.activated) {
         moveBackwards = true
     }
 
-    if (event.key == 'A' || event.key == 'ArrowLeft') {
+
+    /* actions that occurs when a key is pressed and the 'Dev tools' button is deactivated, thus the game is playing normally */
+    if (event.key == 'ArrowUp' && !admin.activated) {
+        if (sackPos.position.z == layer.two.z) {
+            sackPos.position.z = layer.one.z
+            camera.position.z = -3.8
+            mousePos.game.z = -3.8
+        }
+
+        if (sackPos.position.z == layer.three.z) {
+            sackPos.position.z = layer.two.z
+            camera.position.z = -4
+            mousePos.game.z = -4
+        }
+    }
+    
+    if (event.key == 'ArrowDown' && !admin.activated) {
+        if (sackPos.position.z == layer.two.z) {
+            sackPos.position.z = layer.three.z
+            camera.position.z = -4.2
+            mousePos.game.z = -4.2
+        }
+
+        if (sackPos.position.z == layer.one.z) {
+            sackPos.position.z = layer.two.z
+            camera.position.z = -4
+            mousePos.game.z = -4
+        }
+    }
+
+    if (event.key == 'ArrowLeft') {
         moveLeft = true
     }
 
-    if (event.key == 'D' || event.key == 'ArrowRight') {
+    if (event.key == 'ArrowRight') {
         moveRight = true
+    }
+
+    if (event.key == ' ') {
+        jump.intensityToggle = true
     }
 
 })
 
 document.addEventListener("keyup", event => {
 
-    if (event.key == 'w' || event.key == 'ArrowUp') {
+    if (event.key == 'ArrowUp') {
         moveFoward = false
     }
 
-    if (event.key == 'S' || event.key == 'ArrowDown') {
+    if (event.key == 'ArrowDown') {
         moveBackwards = false
     }
 
-    if (event.key == 'A' || event.key == 'ArrowLeft') {
+    if (event.key == 'ArrowLeft') {
         moveLeft = false
+        sackPos.rotation.y = Math.PI
     }
 
-    if (event.key == 'D' || event.key == 'ArrowRight') {
+    if (event.key == 'ArrowRight') {
         moveRight = false
+        sackPos.rotation.y = Math.PI
     }
+
+    if (event.key == ' ') {
+        jump.intensityToggle = false
+    }
+
 })
 
 /*****************************
@@ -364,7 +461,7 @@ document.addEventListener("mouseup", event => { admin.clicking = false })
 
 document.querySelector('#btnAdminDeactivated').addEventListener('click', event => {
     admin.activated = true
-    
+
     mousePos.game.x = camera.position.x
     mousePos.game.y = camera.position.y
 })
@@ -374,5 +471,9 @@ document.querySelector('#btnAdminActivated').addEventListener('click', event => 
 
     camera.position.x = mousePos.game.x
     camera.position.y = mousePos.game.y
+    camera.position.z = mousePos.game.z
+
+    // angle = 0
+    // camera.lookAt(new THREE.Vector3(0,0,0));
 })
 
