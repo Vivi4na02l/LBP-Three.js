@@ -44,8 +44,9 @@ window.onload = function init() {
     // add the output of the renderer to an HTML element (this case, the body)
     document.body.appendChild(renderer.domElement)
     
-    /** house */
+    /** sackboy */
     sackboy()
+    costumes()
 
     /** ground */
     groundFunction()
@@ -97,77 +98,73 @@ function sackboy() {
 
 
     /** MATERIALS */
-    let skinM = new THREE.TextureLoader().load('files/textures/skin.jpg')
-    skinM.wrapS = THREE.RepeatWrapping;
-    skinM.wrapT = THREE.RepeatWrapping;
-    skinM.repeat.set(3,1)
+    /* https://threejs.org/docs/#api/en/constants/Materials */
+    // let skinM = new THREE.TextureLoader().load('files/textures/skin.jpg')
+    // skinM.wrapS = THREE.RepeatWrapping;
+    // skinM.wrapT = THREE.RepeatWrapping;
+    // skinM.repeat.set(3,1)
+    let skin = new THREE.MeshLambertMaterial({ color: '#A7898F' })
 
     let eyesM = new THREE.TextureLoader().load('images/sackboy/eyes.png')
-    // let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
-    let dressColor = new THREE.TextureLoader().load('images/sackboy/dress.png')
 
-    // flatShading: true, 
-    let skin = new THREE.MeshPhongMaterial({ map: skinM });
-    let eyes = new THREE.MeshPhongMaterial({ map: eyesM });
-    // let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
-    let dress = new THREE.MeshPhongMaterial({ map: dressColor });
+    // let skin = new THREE.MeshPhongMaterial({ map: skinM })
+    let eyes = new THREE.MeshPhongMaterial({ map: eyesM })
 
-    // let materialSkin = new THREE.MeshBasicMaterial({ color: 0xa88e64 });
     
 
     /** OBJ. SIZES */
     let headSize = { r:1.2*0.05 }
-    let bodySize = { x:0.7*0.05 , y:1*0.05 , z:2*0.05 }
-    let legSize = { x:0.3*0.05, y:0.35*0.05 , z:1.5*0.05 } // let legSize = { x:0.75, y:0.625 , z:0.325 }
+    let bodySize = { x:0.47*0.05 , y:0.47*0.05 , z:1*0.05 , r:0.47*0.05 }
+    let legSize = { x:0.15*0.05, y:0.35*0.05 , z:1.5*0.05 , r:0.15*0.05 }
     let eyeSize = { r:0.21*0.05 }
-    let armSize = { x:0.2*0.05 , y:0.3*0.05 , z:0.8*0.05 }
-    let forearmSize = { x:armSize.y , y:armSize.x , z:armSize.z }
+    let armSize = { x:0.15*0.05 , y:0.2*0.05 , z:0.8*0.05 }
+    let forearmSize = { x:armSize.y , y:0.25*0.05 , z:armSize.z }
 
-    let handSize = { r:0.2*0.05 }
+    let handSize = { r:0.25*0.05 }
 
-    /** OBJ. CLOTHING SIZES */
-    // let shoesSize = { x:(legSize.x+0.15)*0.05 , y:(legSize.y+0.2)*0.05 , z:0.4*0.05 }
-    // let ribbonSize = { r:0.15 }
-    // let ribbonLateralsSize = { r:0.24 }
 
     /** GEOMETRY */
     let geoHead = new THREE.SphereGeometry(headSize.r);
     let geoEye = new THREE.SphereGeometry(eyeSize.r);
     let geoBody = new THREE.CylinderGeometry(bodySize.x, bodySize.y, bodySize.z);
+    let geoBodyEnds = new THREE.SphereGeometry(bodySize.r, 32, 16, 0, 3.1);
     let geoArm = new THREE.CylinderGeometry(armSize.x, armSize.y, armSize.z);
     let geoForearm = new THREE.CylinderGeometry(forearmSize.x, forearmSize.y, forearmSize.z);
     let geoLeg = new THREE.CylinderGeometry(legSize.x, legSize.y, legSize.z);
-
+    let geoLegStart = new THREE.SphereGeometry(legSize.r);
     let geoHand = new THREE.SphereGeometry(handSize.r);
-    /** GEOMETRY CLOTHING */
-    // let geoShoe = new THREE.CylinderGeometry(shoesSize.x, shoesSize.y, shoesSize.z);
-    // let geoRibbon = new THREE.SphereGeometry(ribbonSize.r);
-    // let geoRibbonLaterals = new THREE.SphereGeometry(ribbonLateralsSize.r);
+
     /** HEAD */
     let head = new THREE.Mesh(geoHead, skin);
-    head.position.set(0 , bodySize.z/2+headSize.r , 0)
+    head.position.y = bodySize.z/2 + bodySize.r/2 + headSize.r
 
     /** EYES */
     let eyeR = new THREE.Mesh(geoEye, eyes);
-    eyeR.position.set(headSize.r/2-eyeSize.r/2 , 0 , headSize.r)
+    eyeR.position.set(headSize.r/2-eyeSize.r/2 , headSize.r/4 , headSize.r)
     let eyeL = new THREE.Mesh(geoEye, eyes);
-    eyeL.position.set(-(headSize.r/2-eyeSize.r/2) , 0 , headSize.r)
+    eyeL.position.set(-(headSize.r/2-eyeSize.r/2) , headSize.r/4 , headSize.r)
 
     /** BODY */
-    let body = new THREE.Mesh(geoBody, dress);
+    let body = new THREE.Mesh(geoBody, skin);
+    let bodyStart = new THREE.Mesh(geoBodyEnds, skin);
+    bodyStart.position.y = bodySize.z/2 - 0.0025
+    bodyStart.rotation.x = -Math.PI/2
+    let bodyEnd = new THREE.Mesh(geoBodyEnds, skin);
+    bodyEnd.position.y = -bodySize.z/2 + 0.0025
+    bodyEnd.rotation.x = Math.PI/2
     
     /** SHOULDER(PIVOT) */
     let shoulderR = new THREE.Object3D();
-    shoulderR.position.set(bodySize.x/2 + armSize.x, bodySize.z/2 , 0)
-    shoulderR.rotation.z = 0.27
+    shoulderR.position.set(bodySize.x/2 + armSize.x, bodySize.z/2 + bodySize.r/2 , 0)
+    shoulderR.rotation.z = 0.50
     let shoulderL = new THREE.Object3D();
-    shoulderL.position.set(-bodySize.x/2 - armSize.x, bodySize.z/2 , 0)
-    shoulderL.rotation.z = -0.27
+    shoulderL.position.set(-bodySize.x/2 - armSize.x, bodySize.z/2 + bodySize.r/2 , 0)
+    shoulderL.rotation.z = -0.50
 
     /** ARMS */
-    let armR = new THREE.Mesh(geoArm, dress);
+    let armR = new THREE.Mesh(geoArm, skin);
     armR.position.y = -armSize.z/2
-    let armL = new THREE.Mesh(geoArm, dress);
+    let armL = new THREE.Mesh(geoArm, skin);
     armL.position.y = -armSize.z/2
 
     /** ELBOW(PIVOT) */
@@ -187,17 +184,67 @@ function sackboy() {
     handR.position.y = -forearmSize.z/2 - handSize.r/2
     let handL = new THREE.Mesh(geoHand, skin);
     handL.position.y = -forearmSize.z/2 - handSize.r/2
-    
 
     /** LEGS */
     let legR = new THREE.Mesh(geoLeg, skin);
-    legR.position.x = bodySize.y/3
-    legR.position.y = -bodySize.z/2 - legSize.z/2
+    legR.position.x = bodySize.y
+    legR.position.y = -bodySize.z/2 - bodySize.r/2 - legSize.z/2
+    let legRStart = new THREE.Mesh(geoLegStart, skin);
+    legRStart.position.x = bodySize.y
+    legRStart.position.y = -bodySize.z/2 - bodySize.r/2
     let legL = new THREE.Mesh(geoLeg, skin);
-    legL.position.x = -bodySize.y/3
-    legL.position.y = -bodySize.z/2 - legSize.z/2 
+    legL.position.x = -bodySize.y
+    legL.position.y = -bodySize.z/2 - bodySize.r/2 - legSize.z/2
+    let legLStart = new THREE.Mesh(geoLegStart, skin);
+    legLStart.position.x = -bodySize.y
+    legLStart.position.y = -bodySize.z/2 - bodySize.r/2
 
-    /* CLOTHING */
+
+    /** ADDING TO SCENES */
+    sackPos.add(body);
+    body.add(bodyStart);
+    body.add(bodyEnd);
+    body.add(head);
+    head.add(eyeR);
+    head.add(eyeL);
+    body.add(shoulderR);
+    shoulderR.add(armR);
+    armR.add(elbowR);
+    elbowR.add(forearmR);
+    forearmR.add(handR);
+    body.add(shoulderL);
+    shoulderL.add(armL);
+    armL.add(elbowL);
+    elbowL.add(forearmL);
+    forearmL.add(handL);
+    body.add(legR);
+    body.add(legRStart);
+    body.add(legL);
+    body.add(legLStart);
+
+    /* POSITION IN "sackPos" */
+    body.position.y = bodySize.y + bodySize.r/2 + legSize.z
+
+}
+
+function costumes() {
+    // let materialSkin = new THREE.MeshBasicMaterial({ color: 0xa88e64 });
+    // flatShading: true, 
+    
+    /** MATERIALS */
+    // let shoesColor = new THREE.TextureLoader().load('images/sackboy/shoes.png')
+    // let shoes = new THREE.MeshPhongMaterial({ map: shoesColor });
+
+    /** OBJ. CLOTHING SIZES */
+    // let shoesSize = { x:(legSize.x+0.15)*0.05 , y:(legSize.y+0.2)*0.05 , z:0.4*0.05 }
+    // let ribbonSize = { r:0.15 }
+    // let ribbonLateralsSize = { r:0.24 }
+
+    /** GEOMETRY CLOTHING */
+    // let geoShoe = new THREE.CylinderGeometry(shoesSize.x, shoesSize.y, shoesSize.z);
+    // let geoRibbon = new THREE.SphereGeometry(ribbonSize.r);
+    // let geoRibbonLaterals = new THREE.SphereGeometry(ribbonLateralsSize.r);
+
     /** SHOES */
     // let shoeR = new THREE.Mesh(geoShoe, shoes)
     // shoeR.position.y = -legSize.z/2
@@ -219,33 +266,12 @@ function sackboy() {
     // ribbonLateralLeft.position.z = headSize.r - headSize.r/4.5
     // ribbonLateralLeft.position.x = -ribbonLateralsSize.r
 
-    /** ADDING TO SCENES */
-    sackPos.add(body);
-    body.add(head);
-    head.add(eyeR);
-    head.add(eyeL);
-    body.add(shoulderR);
-    shoulderR.add(armR);
-    armR.add(elbowR);
-    elbowR.add(forearmR);
-    forearmR.add(handR);
-    body.add(shoulderL);
-    shoulderL.add(armL);
-    armL.add(elbowL);
-    elbowL.add(forearmL);
-    forearmL.add(handL);
-    body.add(legR);
-    body.add(legL);
-
     /** ADDING CLOTHING TO SCENES */
     // legR.add(shoeR);
     // legL.add(shoeL);
     // head.add(ribbon);
     // head.add(ribbonLateralRight);
     // head.add(ribbonLateralLeft);
-
-    /* POSITION IN "sackPos" */
-    body.position.y = bodySize.y + legSize.z // + shoesSize.z
 
 }
 
