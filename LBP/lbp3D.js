@@ -115,9 +115,9 @@ function sackboy() {
     /** OBJ. SIZES */
     let headSize = { r:1.2*0.05 }
     let bodySize = { x:0.47*0.05 , y:0.47*0.05 , z:1*0.05 , r:0.47*0.05 }
-    let legSize = { x:0.15*0.05, y:0.35*0.05 , z:1.5*0.05 , r:0.15*0.05 }
+    let legSize = { x:0.15*0.05, y:0.35*0.05 , z:1.2*0.05 , r:0.15*0.05 }
     let eyeSize = { r:0.21*0.05 }
-    let armSize = { x:0.15*0.05 , y:0.2*0.05 , z:0.8*0.05 }
+    let armSize = { x:0.15*0.05 , y:0.2*0.05 , z:0.7*0.05 }
     let forearmSize = { x:armSize.y , y:0.25*0.05 , z:armSize.z }
 
     let handSize = { r:0.25*0.05 }
